@@ -50,9 +50,29 @@ public class HeartSimulation : MonoBehaviour
     public TMP_Text FibrillationText;
 
     [Header("Visuals")]
-    public Toggle SeeThroughToggle, VeinsToggle;
+    public Toggle SeeThroughToggle, VeinsToggle, ElectricToggle;
     public Material HeartFront;
     public GameObject[] Veins;
+    public Material ElectricSignalMaterial, StandardMaterial;
+    public GameObject Heart;
+
+    [Header("EKG")]
+    public EKGRenderer ekgRenderer;
+
+    public void ToggleShader()
+    {
+        // Toggle between shaders based on the toggle state
+        if (ElectricToggle.isOn)
+        {
+            // Use the material with the custom pulsing shader
+            Heart. GetComponent<SkinnedMeshRenderer>().material = ElectricSignalMaterial;
+        }
+        else
+        {
+            // Use the material with the standard shader
+            Heart. GetComponent<SkinnedMeshRenderer>().material = StandardMaterial;
+        }
+    }
     public void UpdateSeeThrough()
     {
         if(SeeThroughToggle.isOn)
@@ -91,7 +111,7 @@ public class HeartSimulation : MonoBehaviour
         if (!CurrentPotassiumInducedEffect)
         {
             GameObject GO = Instantiate(EffectPrefab);
-            GO.transform.SetParent(EffectParent);
+            GO.transform.SetParent(EffectParent, false);
             CurrentPotassiumInducedEffect = GO.GetComponent<TMP_Text>();
             CurrentPotassiumInducedEffect.text = s;
             if(color != null)
@@ -147,6 +167,7 @@ public class HeartSimulation : MonoBehaviour
         UpdateNutrientValues();
     }
 
+
     public void UpdateDangers()
     {
         if (!dead)
@@ -158,7 +179,10 @@ public class HeartSimulation : MonoBehaviour
                 {
                     float normalizedPotassium = Mathf.InverseLerp(severeHypoPotassium, severeHyperPotassium, CurrentPotassium);
                     if (normalizedPotassium > 0.65f)
+                    {
                         Dead("Fibrillation has occured", "Hyperkalemia induced ventricular fibrillation");
+                        ekgRenderer.fibrillation = true;
+                    }
                     else if (normalizedPotassium < 0.45f)
                         Dead("Cardiac arrest has occured", "Hypokalemia induced cardiac arrest");
                 }
@@ -178,6 +202,7 @@ public class HeartSimulation : MonoBehaviour
         AddPotassiumInducedEffect(descOfDeath, Color.red);
         FibrillationWarning.SetActive(true);
         FibrillationText.text = causeOfDeath;
+        ElectricSignalMaterial.SetFloat("_RandomPulsing", 1);
     }
 
     public void Shock()
@@ -191,6 +216,8 @@ public class HeartSimulation : MonoBehaviour
         PotassiumSlider.value = 4.00f;
         UpdateNutrientValues();
         FibrillationWarning.SetActive(false);
+        ekgRenderer.fibrillation = false;
+        ElectricSignalMaterial.SetFloat("_RandomPulsing", 0);
     }
 
     public void UpdateAnimationSpeed()
@@ -233,11 +260,13 @@ public class HeartSimulation : MonoBehaviour
         {
             currentDisplayedBPM--;
             timeBetweenBeats = 60f / currentDisplayedBPM;
+            ElectricSignalMaterial.SetFloat("_PulsesPerMinute", beatsPerMinute);
         }
         else if (currentDisplayedBPM < beatsPerMinute)
         {
             currentDisplayedBPM++;
             timeBetweenBeats = 60f / currentDisplayedBPM;
+            ElectricSignalMaterial.SetFloat("_PulsesPerMinute", beatsPerMinute);
         }
         BPMDisplayText.text = "BPM: " + currentDisplayedBPM;
     }
@@ -259,7 +288,7 @@ public class HeartSimulation : MonoBehaviour
 
     void SimulateHeartbeat()
     {
-        
+        ekgRenderer.Beat();
             HeartAnimator.Play(HeartbeatAnimation.name);
     }
 }
