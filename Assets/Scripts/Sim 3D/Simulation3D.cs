@@ -225,18 +225,18 @@ public class Simulation3D : MonoBehaviour
         Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
         Gizmos.matrix = m;
 
-        // if (Application.isPlaying)
-        // {
-        //     Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        //     bool isPullInteraction = Input.GetMouseButton(0);
-        //     bool isPushInteraction = Input.GetMouseButton(1);
-        //     bool isInteracting = isPullInteraction || isPushInteraction;
-        //     if (isInteracting)
-        //     {
-        //         Gizmos.color = isPullInteraction ? Color.green : Color.red;
-        //         Gizmos.DrawWireSphere(mousePos, interactionRadius);
-        //     }
-        // }
+        if (Application.isPlaying)
+        {
+            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            bool isPullInteraction = Input.GetMouseButton(0);
+            bool isPushInteraction = Input.GetMouseButton(1);
+            bool isInteracting = isPullInteraction || isPushInteraction;
+            if (isInteracting)
+            {
+                Gizmos.color = isPullInteraction ? Color.green : Color.red;
+                Gizmos.DrawWireSphere(mousePos, interactionRadius);
+            }
+        }
 
     }
 }
