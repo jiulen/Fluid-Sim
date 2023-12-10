@@ -17,6 +17,10 @@ public class Simulation3D : MonoBehaviour
     public float nearPressureMultiplier;
     public float viscosityStrength;
 
+    [Header("Interaction Settings")]
+    public float interactionRadius;
+    public float interactionStrength;
+
     [Header("References")]
     public ComputeShader compute;
     public Spawner3D spawner;
@@ -160,6 +164,21 @@ public class Simulation3D : MonoBehaviour
 
         compute.SetMatrix("localToWorld", transform.localToWorldMatrix);
         compute.SetMatrix("worldToLocal", transform.worldToLocalMatrix);
+
+        // Mouse interaction settings:
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        bool isPullInteraction = Input.GetMouseButton(0);
+        bool isPushInteraction = Input.GetMouseButton(1);
+        float currInteractStrength = 0;
+        if (isPushInteraction || isPullInteraction)
+        {
+            currInteractStrength = isPushInteraction ? -interactionStrength : interactionStrength;
+            Debug.Log("click");
+        }
+
+        compute.SetVector("interactionInputPoint", mousePos);
+        compute.SetFloat("interactionInputStrength", currInteractStrength);
+        compute.SetFloat("interactionInputRadius", interactionRadius);
     }
 
     void SetInitialBufferData(Spawner3D.SpawnData spawnData)
@@ -205,6 +224,19 @@ public class Simulation3D : MonoBehaviour
         Gizmos.color = new Color(0, 1, 0, 0.5f);
         Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
         Gizmos.matrix = m;
+
+        // if (Application.isPlaying)
+        // {
+        //     Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        //     bool isPullInteraction = Input.GetMouseButton(0);
+        //     bool isPushInteraction = Input.GetMouseButton(1);
+        //     bool isInteracting = isPullInteraction || isPushInteraction;
+        //     if (isInteracting)
+        //     {
+        //         Gizmos.color = isPullInteraction ? Color.green : Color.red;
+        //         Gizmos.DrawWireSphere(mousePos, interactionRadius);
+        //     }
+        // }
 
     }
 }
